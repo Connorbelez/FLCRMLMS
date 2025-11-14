@@ -69,7 +69,9 @@ export const useResizeTableHeader = () => {
     ({ x }) => {
       if (!initialPointerPositionX) return;
 
-      throwIfNotDefined(recordField, 'recordField');
+      if (!recordField) {
+        return;
+      }
 
       const newResizeOffset = x - initialPointerPositionX;
 
@@ -123,7 +125,9 @@ export const useResizeTableHeader = () => {
   const handleResizeHandlerEnd = useRecoilCallback(
     ({ snapshot, set }) =>
       async () => {
-        throwIfNotDefined(recordField, 'recordField');
+        if (!recordField) {
+          return;
+        }
 
         if (!resizedFieldMetadataItemId) return;
 

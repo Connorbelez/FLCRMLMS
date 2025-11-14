@@ -21,6 +21,7 @@ export enum CoreObjectNameSingular {
   Note = 'note',
   NoteTarget = 'noteTarget',
   Opportunity = 'opportunity',
+  Mortgage = 'mortgage',
   Person = 'person',
   Task = 'task',
   TaskTarget = 'taskTarget',

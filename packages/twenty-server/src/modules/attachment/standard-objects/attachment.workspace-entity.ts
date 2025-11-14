@@ -26,6 +26,7 @@ import { DashboardWorkspaceEntity } from 'src/modules/dashboard/standard-objects
 import { NoteWorkspaceEntity } from 'src/modules/note/standard-objects/note.workspace-entity';
 import { OpportunityWorkspaceEntity } from 'src/modules/opportunity/standard-objects/opportunity.workspace-entity';
 import { PersonWorkspaceEntity } from 'src/modules/person/standard-objects/person.workspace-entity';
+import { MortgageWorkspaceEntity } from 'src/modules/mortgage/standard-objects/mortgage.workspace-entity';
 import { TaskWorkspaceEntity } from 'src/modules/task/standard-objects/task.workspace-entity';
 import { WorkflowWorkspaceEntity } from 'src/modules/workflow/common/standard-objects/workflow.workspace-entity';
 import { WorkspaceMemberWorkspaceEntity } from 'src/modules/workspace-member/standard-objects/workspace-member.workspace-entity';
@@ -236,6 +237,22 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
 
   @WorkspaceJoinColumn('opportunity')
   opportunityId: string | null;
+
+  @WorkspaceRelation({
+    standardId: ATTACHMENT_STANDARD_FIELD_IDS.mortgage,
+    type: RelationType.MANY_TO_ONE,
+    label: msg`Mortgage`,
+    description: msg`Attachment mortgage`,
+    icon: 'IconBuildingBank',
+    inverseSideTarget: () => MortgageWorkspaceEntity,
+    inverseSideFieldKey: 'attachments',
+    onDelete: RelationOnDeleteAction.CASCADE,
+  })
+  @WorkspaceIsNullable()
+  mortgage: Relation<MortgageWorkspaceEntity> | null;
+
+  @WorkspaceJoinColumn('mortgage')
+  mortgageId: string | null;
 
   @WorkspaceRelation({
     standardId: ATTACHMENT_STANDARD_FIELD_IDS.dashboard,
