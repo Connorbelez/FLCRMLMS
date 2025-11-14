@@ -30,7 +30,7 @@ DEFAULT_SUBDOMAIN=app
 NODE_ENV=development
 PG_DATABASE_URL=postgres://postgres:postgres@localhost:5432/default
 REDIS_URL=redis://localhost:6379
-APP_SECRET=mk+mc0YBcVlj4HParyCmdA+2VP0q/7PRqupMAYCFhu0=
+APP_SECRET=<replace_with_random_32_characters>
 SIGN_IN_PREFILLED=true
 
 FRONTEND_URL=http://localhost:3001
