@@ -22,6 +22,7 @@ import { FavoriteFolderWorkspaceEntity } from 'src/modules/favorite-folder/stand
 import { NoteWorkspaceEntity } from 'src/modules/note/standard-objects/note.workspace-entity';
 import { OpportunityWorkspaceEntity } from 'src/modules/opportunity/standard-objects/opportunity.workspace-entity';
 import { PersonWorkspaceEntity } from 'src/modules/person/standard-objects/person.workspace-entity';
+import { MortgageWorkspaceEntity } from 'src/modules/mortgage/standard-objects/mortgage.workspace-entity';
 import { TaskWorkspaceEntity } from 'src/modules/task/standard-objects/task.workspace-entity';
 import { WorkflowRunWorkspaceEntity } from 'src/modules/workflow/common/standard-objects/workflow-run.workspace-entity';
 import { WorkflowVersionWorkspaceEntity } from 'src/modules/workflow/common/standard-objects/workflow-version.workspace-entity';
@@ -130,6 +131,22 @@ export class FavoriteWorkspaceEntity extends BaseWorkspaceEntity {
 
   @WorkspaceJoinColumn('opportunity')
   opportunityId: string;
+
+  @WorkspaceRelation({
+    standardId: FAVORITE_STANDARD_FIELD_IDS.mortgage,
+    type: RelationType.MANY_TO_ONE,
+    label: msg`Mortgage`,
+    description: msg`Favorite mortgage`,
+    icon: 'IconBuildingBank',
+    inverseSideTarget: () => MortgageWorkspaceEntity,
+    inverseSideFieldKey: 'favorites',
+    onDelete: RelationOnDeleteAction.CASCADE,
+  })
+  @WorkspaceIsNullable()
+  mortgage: Relation<MortgageWorkspaceEntity> | null;
+
+  @WorkspaceJoinColumn('mortgage')
+  mortgageId: string;
 
   @WorkspaceRelation({
     standardId: FAVORITE_STANDARD_FIELD_IDS.workflow,

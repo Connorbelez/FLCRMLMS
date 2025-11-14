@@ -4,7 +4,6 @@ import { Modal } from '@/ui/layout/modal/components/Modal';
 import { ScrollWrapper } from '@/ui/utilities/scroll/components/ScrollWrapper';
 import styled from '@emotion/styled';
 import { lazy, Suspense } from 'react';
-import { createPortal } from 'react-dom';
 import { IconDownload, IconX } from 'twenty-ui/display';
 import { IconButton } from 'twenty-ui/input';
 import { getFileNameAndExtension } from '~/utils/file/getFileNameAndExtension';
@@ -178,6 +177,5 @@ export const AttachmentPreviewModal = ({
     </StyledModal>
   );
 
-  // Render modal to document.body using portal to escape parent container constraints
-  return createPortal(modalContent, document.body);
+  return modalContent;
 };
