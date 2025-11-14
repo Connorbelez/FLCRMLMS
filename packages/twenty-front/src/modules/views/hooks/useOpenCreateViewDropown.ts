@@ -20,11 +20,12 @@ export const useOpenCreateViewDropdown = (viewBardId?: string) => {
   const openCreateViewDropdown = (referenceView: View | undefined) => {
     if (isDefined(referenceView?.id)) {
       setViewPickerReferenceViewId(referenceView.id);
-      setViewPickerMode('create-empty');
-      openDropdown({
-        dropdownComponentInstanceIdFromProps: VIEW_PICKER_DROPDOWN_ID,
-      });
     }
+
+    setViewPickerMode('create-empty');
+    openDropdown({
+      dropdownComponentInstanceIdFromProps: VIEW_PICKER_DROPDOWN_ID,
+    });
   };
 
   return { openCreateViewDropdown };

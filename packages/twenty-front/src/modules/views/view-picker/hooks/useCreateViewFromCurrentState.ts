@@ -94,21 +94,25 @@ export const useCreateViewFromCurrentState = () => {
         set(viewPickerIsPersistingCallbackState, true);
         set(viewPickerIsDirtyCallbackState, false);
 
-        const createdViewId = await createViewFromCurrentView(
-          {
-            name,
-            icon: iconKey,
-            type,
-            kanbanFieldMetadataId,
-            calendarFieldMetadataId,
-            visibility,
-          },
-          shouldCopyFiltersAndSortsAndAggregate,
-        );
+        try {
+          const createdViewId = await createViewFromCurrentView(
+            {
+              name,
+              icon: iconKey,
+              type,
+              kanbanFieldMetadataId,
+              calendarFieldMetadataId,
+              visibility,
+            },
+            shouldCopyFiltersAndSortsAndAggregate,
+          );
 
-        if (isDefined(createdViewId)) {
-          closeAndResetViewPicker();
-          changeView(createdViewId);
+          if (isDefined(createdViewId)) {
+            closeAndResetViewPicker();
+            changeView(createdViewId);
+          }
+        } finally {
+          set(viewPickerIsPersistingCallbackState, false);
         }
       },
     [

@@ -19,6 +19,7 @@ import { CompanyWorkspaceEntity } from 'src/modules/company/standard-objects/com
 import { NoteWorkspaceEntity } from 'src/modules/note/standard-objects/note.workspace-entity';
 import { OpportunityWorkspaceEntity } from 'src/modules/opportunity/standard-objects/opportunity.workspace-entity';
 import { PersonWorkspaceEntity } from 'src/modules/person/standard-objects/person.workspace-entity';
+import { MortgageWorkspaceEntity } from 'src/modules/mortgage/standard-objects/mortgage.workspace-entity';
 
 @WorkspaceEntity({
   standardId: STANDARD_OBJECT_IDS.noteTarget,
@@ -94,6 +95,22 @@ export class NoteTargetWorkspaceEntity extends BaseWorkspaceEntity {
 
   @WorkspaceJoinColumn('opportunity')
   opportunityId: string | null;
+
+  @WorkspaceRelation({
+    standardId: NOTE_TARGET_STANDARD_FIELD_IDS.mortgage,
+    type: RelationType.MANY_TO_ONE,
+    label: msg`Mortgage`,
+    description: msg`NoteTarget mortgage`,
+    icon: 'IconBuildingBank',
+    inverseSideTarget: () => MortgageWorkspaceEntity,
+    inverseSideFieldKey: 'noteTargets',
+    onDelete: RelationOnDeleteAction.CASCADE,
+  })
+  @WorkspaceIsNullable()
+  mortgage: Relation<MortgageWorkspaceEntity> | null;
+
+  @WorkspaceJoinColumn('mortgage')
+  mortgageId: string | null;
 
   @WorkspaceDynamicRelation({
     type: RelationType.MANY_TO_ONE,

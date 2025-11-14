@@ -28,7 +28,7 @@ import { mapRecordSortToViewSort } from '@/views/utils/mapRecordSortToViewSort';
 import { useRecoilCallback } from 'recoil';
 import { isDefined } from 'twenty-shared/utils';
 import { v4 } from 'uuid';
-import { ViewCalendarLayout } from '~/generated-metadata/graphql';
+import { ViewCalendarLayout, ViewOpenRecordIn } from '~/generated-metadata/graphql';
 import { isUndefinedOrNull } from '~/utils/isUndefinedOrNull';
 
 export const useCreateViewFromCurrentView = (viewBarComponentId?: string) => {
@@ -100,44 +100,43 @@ export const useCreateViewFromCurrentView = (viewBarComponentId?: string) => {
           currentViewIdCallbackState,
         );
 
-        if (!isDefined(currentViewId)) {
-          return undefined;
-        }
+        const hasTemplateView = isDefined(currentViewId);
 
-        const sourceView = snapshot
-          .getLoadable(
-            coreViewFromViewIdFamilySelector({
-              viewId: currentViewId,
-            }),
-          )
-          .getValue();
-
-        if (!isDefined(sourceView)) {
-          return undefined;
-        }
+        const sourceView = hasTemplateView
+          ? snapshot
+              .getLoadable(
+                coreViewFromViewIdFamilySelector({
+                  viewId: currentViewId as string,
+                }),
+              )
+              .getValue()
+          : undefined;
 
         set(isPersistingViewFieldsState, true);
 
-        const viewType = type ?? sourceView.type;
+        const viewType = type ?? sourceView?.type ?? ViewType.Table;
 
         const result = await createView({
           input: {
             id: id ?? v4(),
-            name: name ?? sourceView.name,
-            icon: icon ?? sourceView.icon,
+            name: name ?? sourceView?.name ?? 'New view',
+            icon: icon ?? sourceView?.icon ?? 'IconList',
             key: null,
-            kanbanAggregateOperation: shouldCopyFiltersAndSortsAndAggregate
-              ? sourceView.kanbanAggregateOperation
-              : undefined,
+            kanbanAggregateOperation:
+              shouldCopyFiltersAndSortsAndAggregate && sourceView
+                ? sourceView.kanbanAggregateOperation
+                : undefined,
             kanbanAggregateOperationFieldMetadataId:
-              shouldCopyFiltersAndSortsAndAggregate
+              shouldCopyFiltersAndSortsAndAggregate && sourceView
                 ? sourceView.kanbanAggregateOperationFieldMetadataId
                 : undefined,
             type: convertViewTypeToCore(viewType),
-            objectMetadataId: sourceView.objectMetadataId,
-            openRecordIn: convertViewOpenRecordInToCore(
-              sourceView.openRecordIn,
-            ),
+            objectMetadataId:
+              sourceView?.objectMetadataId ?? objectMetadataItem.id,
+            openRecordIn:
+              hasTemplateView && sourceView
+                ? convertViewOpenRecordInToCore(sourceView.openRecordIn)
+                : convertViewOpenRecordInToCore(ViewOpenRecordIn.SIDE_PANEL),
             anyFieldFilterValue: anyFieldFilterValue,
             calendarLayout:
               viewType === ViewType.Calendar
@@ -163,19 +162,21 @@ export const useCreateViewFromCurrentView = (viewBarComponentId?: string) => {
           throw new Error('Failed to create view');
         }
 
-        const fieldResult = await createViewFields({
-          inputs: sourceView.viewFields.map(
-            ({ __typename, id: _id, ...viewField }) => ({
-              ...viewField,
-              id: v4(),
-              viewId: newViewId,
-            }),
-          ),
-        });
+        if (sourceView) {
+          const fieldResult = await createViewFields({
+            inputs: sourceView.viewFields.map(
+              ({ __typename, id: _id, ...viewField }) => ({
+                ...viewField,
+                id: v4(),
+                viewId: newViewId,
+              }),
+            ),
+          });
 
-        if (fieldResult.status === 'failed') {
-          set(isPersistingViewFieldsState, false);
-          return undefined;
+          if (fieldResult.status === 'failed') {
+            set(isPersistingViewFieldsState, false);
+            return undefined;
+          }
         }
 
         if (type === ViewType.Kanban) {

@@ -26,6 +26,7 @@ export const STANDARD_OBJECT_ICONS = {
   noteTarget: 'IconCheckbox',
   opportunity: 'IconTargetArrow',
   person: 'IconUser',
+  mortgage: 'IconBuildingBank',
   task: 'IconCheckbox',
   taskTarget: 'IconCheckbox',
   timelineActivity: 'IconTimelineEvent',

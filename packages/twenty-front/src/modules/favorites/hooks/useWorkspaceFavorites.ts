@@ -17,7 +17,7 @@ import { usePrefetchedFavoritesData } from './usePrefetchedFavoritesData';
 
 export const useWorkspaceFavorites = () => {
   const featureFlags = useFeatureFlagsMap();
-  const { workspaceFavorites } = usePrefetchedFavoritesData();
+  const { workspaceFavorites, favorites } = usePrefetchedFavoritesData();
   const coreViews = useRecoilValue(coreViewsState);
   const objectMetadataItems = useRecoilValue(objectMetadataItemsState);
   const { objectMetadataItem: favoriteObjectMetadataItem } =
@@ -50,24 +50,27 @@ export const useWorkspaceFavorites = () => {
         view.objectMetadataId !== dashboardObjectMetadataId,
     );
 
-  const sortedWorkspaceFavorites = useMemo(
-    () =>
-      sortFavorites(
-        workspaceFavorites.filter((favorite) => favorite.viewId),
-        favoriteRelationFieldMetadataItems,
-        getObjectRecordIdentifierByNameSingular,
-        false,
-        views,
-        objectMetadataItems,
-      ),
-    [
-      workspaceFavorites,
+  const sortedWorkspaceFavorites = useMemo(() => {
+    const allViewFavorites = [...workspaceFavorites, ...favorites].filter(
+      (favorite) => favorite.viewId,
+    );
+
+    return sortFavorites(
+      allViewFavorites,
       favoriteRelationFieldMetadataItems,
       getObjectRecordIdentifierByNameSingular,
+      false,
       views,
       objectMetadataItems,
-    ],
-  );
+    );
+  }, [
+    workspaceFavorites,
+    favorites,
+    favoriteRelationFieldMetadataItems,
+    getObjectRecordIdentifierByNameSingular,
+    views,
+    objectMetadataItems,
+  ]);
 
   const workspaceFavoriteIds = new Set(
     sortedWorkspaceFavorites.map((favorite) => favorite.recordId),
