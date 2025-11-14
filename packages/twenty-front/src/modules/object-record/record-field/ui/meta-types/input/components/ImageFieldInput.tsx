@@ -1,9 +1,16 @@
 import { AttachmentGrid } from '@/activities/files/components/AttachmentGrid';
+import { AttachmentPreviewModal } from '@/activities/files/components/AttachmentPreviewModal';
 import { AttachmentSelector } from '@/activities/files/components/AttachmentSelector';
+import {
+  hasImageExtension,
+  IMAGE_EXTENSIONS,
+} from '@/activities/files/constants/imageExtensions';
 import { useAttachments } from '@/activities/files/hooks/useAttachments';
 import { useAttachmentsByIds } from '@/activities/files/hooks/useAttachmentsByIds';
 import { useUploadAttachmentFile } from '@/activities/files/hooks/useUploadAttachmentFile';
+import { type Attachment } from '@/activities/files/types/Attachment';
 import { type ActivityTargetableObject } from '@/activities/types/ActivityTargetableEntity';
+import { isAttachmentPreviewEnabledState } from '@/client-config/states/isAttachmentPreviewEnabledState';
 import { FieldInputEventContext } from '@/object-record/record-field/ui/contexts/FieldInputEventContext';
 import { useImageField } from '@/object-record/record-field/ui/meta-types/hooks/useImageField';
 import { FieldInputContainer } from '@/ui/field/input/components/FieldInputContainer';
@@ -19,6 +26,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useRecoilValue } from 'recoil';
 import { isDefined } from 'twenty-shared/utils';
 import { IconLink, IconUpload } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
@@ -48,9 +56,8 @@ const StyledEmptyState = styled.div`
   border-radius: ${({ theme }) => theme.border.radius.sm};
 `;
 
-const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
-
 const MODAL_ID = 'image-field-attachment-selector';
+const PREVIEW_MODAL_ID = 'image-field-preview-modal';
 
 export const ImageFieldInput = () => {
   const { t } = useLingui();
@@ -60,6 +67,11 @@ export const ImageFieldInput = () => {
   const { uploadAttachmentFile } = useUploadAttachmentFile();
   const { openModal, closeModal } = useModal();
   const [isUploading, setIsUploading] = useState(false);
+  const [previewedAttachment, setPreviewedAttachment] =
+    useState<Attachment | null>(null);
+  const isAttachmentPreviewEnabled = useRecoilValue(
+    isAttachmentPreviewEnabledState,
+  );
 
   // Memoize attachmentIds to prevent infinite useEffect loop (new array reference every render)
   const attachmentIds = useMemo(
@@ -91,9 +103,11 @@ export const ImageFieldInput = () => {
   );
 
   const isImageAttachment = (name: string, fileCategory: string) => {
-    if (fileCategory === 'IMAGE') return true;
-    const ext = name.split('.').at(-1)?.toLowerCase();
-    return !!ext && IMAGE_EXTENSIONS.includes(ext);
+    if (fileCategory === 'IMAGE') {
+      return true;
+    }
+
+    return hasImageExtension(name);
   };
 
   const handleUploadClick = () => {
@@ -121,7 +135,9 @@ export const ImageFieldInput = () => {
           uploadedData.ids.push(result.attachment.id);
           uploadedData.paths.push(result.attachment.fullPath);
           uploadedData.names.push(result.attachment.name);
-          uploadedData.types.push(result.attachment.type);
+          const attachmentType =
+            result.attachment.type || file.type || 'application/octet-stream';
+          uploadedData.types.push(attachmentType);
         }
       }
 
@@ -196,7 +212,7 @@ export const ImageFieldInput = () => {
       attachmentIds: pendingSelection,
       fullPaths: selectedAttachments.map((a) => a.fullPath),
       names: selectedAttachments.map((a) => a.name),
-      types: selectedAttachments.map((a) => a.type),
+      types: selectedAttachments.map((a) => a.type || ''),
     };
 
     console.group(
@@ -228,6 +244,32 @@ export const ImageFieldInput = () => {
     onSubmit?.({ newValue });
   };
 
+  const handlePreview = (attachment: Attachment) => {
+    if (!isAttachmentPreviewEnabled) {
+      console.log('handlePreview - opening in new tab', attachment.fullPath);
+      if (typeof window !== 'undefined') {
+        window.open(attachment.fullPath, '_blank', 'noopener,noreferrer');
+      }
+      return;
+    }
+
+    // Close the attachment selector modal if it's open
+    // This allows the preview modal to be full-screen instead of constrained
+    console.log('handlePreview - closing modal', MODAL_ID);
+    closeModal(MODAL_ID);
+
+    // Open the preview modal - it will render on top of the field editor
+    // The preview modal is full-screen and will cover the field editor
+    console.log('handlePreview - opening preview modal', PREVIEW_MODAL_ID);
+    setPreviewedAttachment(attachment);
+    openModal(PREVIEW_MODAL_ID);
+  };
+
+  const handlePreviewClose = () => {
+    closeModal(PREVIEW_MODAL_ID);
+    setPreviewedAttachment(null);
+  };
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -242,11 +284,12 @@ export const ImageFieldInput = () => {
   }, [onEscape, onSubmit, draftValue]);
 
   return (
-    <>
+    <div id="ImageFieldInput">
       <FieldInputContainer>
         <StyledContainer>
           <StyledButtonRow>
             <Button
+              ariaLabel="ImageFieldInput-UploadButton"
               Icon={IconUpload}
               title={isUploading ? t`Uploading...` : t`Upload Images`}
               variant="secondary"
@@ -255,6 +298,7 @@ export const ImageFieldInput = () => {
               size="small"
             />
             <Button
+              ariaLabel="ImageFieldInput-LinkExistingButton"
               Icon={IconLink}
               title={t`Link Existing`}
               variant="secondary"
@@ -285,7 +329,11 @@ export const ImageFieldInput = () => {
           )}
 
           {!loading && attachments.length > 0 && (
-            <AttachmentGrid attachments={attachments} onRemove={handleRemove} />
+            <AttachmentGrid
+              attachments={attachments}
+              onRemove={handleRemove}
+              onPreview={handlePreview}
+            />
           )}
         </StyledContainer>
       </FieldInputContainer>
@@ -293,8 +341,9 @@ export const ImageFieldInput = () => {
       <Modal
         modalId={MODAL_ID}
         isClosable={true}
+        shouldCloseModalOnClickOutsideOrEscape={true}
         onClose={handleModalClose}
-        size="large"
+        size="extraLarge"
         padding="none"
       >
         <AttachmentSelector
@@ -306,6 +355,12 @@ export const ImageFieldInput = () => {
           title={t`Select Images`}
         />
       </Modal>
-    </>
+      <AttachmentPreviewModal
+        modalId={PREVIEW_MODAL_ID}
+        attachment={previewedAttachment}
+        onClose={handlePreviewClose}
+        canDownload={true}
+      />
+    </div>
   );
 };

@@ -205,7 +205,6 @@ export const FormMultiSelectFieldInput = ({
   return (
     <FormFieldInputContainer data-testid={testId}>
       {label ? <InputLabel>{label}</InputLabel> : null}
-
       <FormFieldInputRowContainer>
         <FormFieldInputInnerContainer
           formFieldInputInstanceId={instanceId}

@@ -83,7 +83,7 @@ export const useCreateOneRecord = <
 
     const idForCreation = recordInput.id ?? v4();
 
-    const sanitizedInput = {
+    const sanitizedRecordInput = {
       ...sanitizeRecordInput({
         objectMetadataItem,
         recordInput,
@@ -98,8 +98,7 @@ export const useCreateOneRecord = <
       objectMetadataItems,
       recordInput: {
         ...computeOptimisticCreateRecordBaseRecordInput(objectMetadataItem),
-        ...recordInput,
-        id: idForCreation,
+        ...sanitizedRecordInput,
       },
       objectPermissionsByObjectMetadataId,
     });
@@ -138,7 +137,7 @@ export const useCreateOneRecord = <
       .mutate({
         mutation: createOneRecordMutation,
         variables: {
-          input: sanitizedInput,
+          input: sanitizedRecordInput,
         },
         update: (cache, { data }) => {
           const record = data?.[mutationResponseField];

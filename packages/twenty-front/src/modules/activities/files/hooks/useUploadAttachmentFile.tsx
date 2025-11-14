@@ -48,6 +48,7 @@ export const useUploadAttachmentFile = () => {
       name: file.name,
       fullPath: attachmentPath,
       fileCategory: getFileType(file.name),
+      type: file.type || 'application/octet-stream',
       [targetableObjectFieldIdName]: targetableObject.id,
     } as Partial<Attachment>;
 
