@@ -1,30 +1,19 @@
 import styled from '@emotion/styled';
-import { lazy, type ReactElement, Suspense, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { type ReactElement, useState } from 'react';
 
 import { DropZone } from '@/activities/files/components/DropZone';
 import { useUploadAttachmentFile } from '@/activities/files/hooks/useUploadAttachmentFile';
 import { type Attachment } from '@/activities/files/types/Attachment';
-import { downloadFile } from '@/activities/files/utils/downloadFile';
 import { type ActivityTargetableObject } from '@/activities/types/ActivityTargetableEntity';
 import { isAttachmentPreviewEnabledState } from '@/client-config/states/isAttachmentPreviewEnabledState';
-import { Modal } from '@/ui/layout/modal/components/Modal';
+import { AttachmentPreviewModal } from '@/activities/files/components/AttachmentPreviewModal';
 import { useRecoilValue } from 'recoil';
 
 import { ActivityList } from '@/activities/components/ActivityList';
 import { useHasPermissionFlag } from '@/settings/roles/hooks/useHasPermissionFlag';
 import { useModal } from '@/ui/layout/modal/hooks/useModal';
-import { ScrollWrapper } from '@/ui/utilities/scroll/components/ScrollWrapper';
-import { IconDownload, IconX } from 'twenty-ui/display';
-import { IconButton } from 'twenty-ui/input';
 import { PermissionFlagType } from '~/generated-metadata/graphql';
 import { AttachmentRow } from './AttachmentRow';
-
-const DocumentViewer = lazy(() =>
-  import('@/activities/files/components/DocumentViewer').then((module) => ({
-    default: module.DocumentViewer,
-  })),
-);
 
 type AttachmentListProps = {
   targetableObject: ActivityTargetableObject;
@@ -67,53 +56,6 @@ const StyledDropZoneContainer = styled.div`
   height: 100%;
   width: 100%;
   overflow: auto;
-`;
-
-const StyledLoadingContainer = styled.div`
-  align-items: center;
-  background: ${({ theme }) => theme.background.primary};
-  display: flex;
-  height: 80vh;
-  justify-content: center;
-  width: 100%;
-`;
-
-const StyledLoadingText = styled.div`
-  color: ${({ theme }) => theme.font.color.secondary};
-  font-size: ${({ theme }) => theme.font.size.lg};
-  font-weight: ${({ theme }) => theme.font.weight.medium};
-`;
-
-const StyledHeader = styled.div`
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 40px;
-`;
-
-const StyledModalTitle = styled.span`
-  color: ${({ theme }) => theme.font.color.primary};
-`;
-
-const StyledModalHeader = styled(Modal.Header)`
-  height: auto;
-  padding: 0;
-`;
-
-const StyledModalContent = styled(Modal.Content)`
-  padding: 0;
-`;
-
-const StyledModal = styled(Modal)`
-  gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => theme.spacing(3)};
-`;
-
-const StyledButtonContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: ${({ theme }) => theme.spacing(1)};
 `;
 
 export const PREVIEW_MODAL_ID = 'preview-modal';
@@ -164,11 +106,6 @@ export const AttachmentList = ({
     setPreviewedAttachment(null);
   };
 
-  const handleDownload = () => {
-    if (!previewedAttachment) return;
-    downloadFile(previewedAttachment.fullPath, previewedAttachment.name);
-  };
-
   return (
     <>
       {attachments && attachments.length > 0 && (
@@ -203,57 +140,12 @@ export const AttachmentList = ({
           </StyledDropZoneContainer>
         </StyledContainer>
       )}
-      {previewedAttachment &&
-        isAttachmentPreviewEnabled &&
-        createPortal(
-          <StyledModal
-            modalId={PREVIEW_MODAL_ID}
-            size="large"
-            isClosable
-            onClose={handleClosePreview}
-          >
-            <StyledModalHeader>
-              <StyledHeader>
-                <StyledModalTitle>{previewedAttachment.name}</StyledModalTitle>
-                <StyledButtonContainer>
-                  {hasDownloadPermission && (
-                    <IconButton
-                      Icon={IconDownload}
-                      onClick={handleDownload}
-                      size="small"
-                    />
-                  )}
-                  <IconButton
-                    Icon={IconX}
-                    onClick={handleClosePreview}
-                    size="small"
-                  />
-                </StyledButtonContainer>
-              </StyledHeader>
-            </StyledModalHeader>
-            <ScrollWrapper
-              componentInstanceId={`preview-modal-${previewedAttachment.id}`}
-            >
-              <StyledModalContent>
-                <Suspense
-                  fallback={
-                    <StyledLoadingContainer>
-                      <StyledLoadingText>
-                        Loading document viewer...
-                      </StyledLoadingText>
-                    </StyledLoadingContainer>
-                  }
-                >
-                  <DocumentViewer
-                    documentName={previewedAttachment.name}
-                    documentUrl={previewedAttachment.fullPath}
-                  />
-                </Suspense>
-              </StyledModalContent>
-            </ScrollWrapper>
-          </StyledModal>,
-          document.body,
-        )}
+      <AttachmentPreviewModal
+        modalId={PREVIEW_MODAL_ID}
+        attachment={isAttachmentPreviewEnabled ? previewedAttachment : null}
+        onClose={handleClosePreview}
+        canDownload={hasDownloadPermission}
+      />
     </>
   );
 };

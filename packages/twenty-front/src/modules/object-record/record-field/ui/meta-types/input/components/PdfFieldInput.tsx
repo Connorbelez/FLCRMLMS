@@ -1,9 +1,12 @@
 import { AttachmentGrid } from '@/activities/files/components/AttachmentGrid';
+import { AttachmentPreviewModal } from '@/activities/files/components/AttachmentPreviewModal';
 import { AttachmentSelector } from '@/activities/files/components/AttachmentSelector';
 import { useAttachments } from '@/activities/files/hooks/useAttachments';
 import { useAttachmentsByIds } from '@/activities/files/hooks/useAttachmentsByIds';
 import { useUploadAttachmentFile } from '@/activities/files/hooks/useUploadAttachmentFile';
+import { type Attachment } from '@/activities/files/types/Attachment';
 import { type ActivityTargetableObject } from '@/activities/types/ActivityTargetableEntity';
+import { isAttachmentPreviewEnabledState } from '@/client-config/states/isAttachmentPreviewEnabledState';
 import { FieldInputEventContext } from '@/object-record/record-field/ui/contexts/FieldInputEventContext';
 import { usePdfField } from '@/object-record/record-field/ui/meta-types/hooks/usePdfField';
 import { FieldInputContainer } from '@/ui/field/input/components/FieldInputContainer';
@@ -19,6 +22,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useRecoilValue } from 'recoil';
 import { isDefined } from 'twenty-shared/utils';
 import { IconLink, IconUpload } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
@@ -51,6 +55,7 @@ const StyledEmptyState = styled.div`
 const PDF_EXTENSION = 'pdf';
 
 const MODAL_ID = 'pdf-field-attachment-selector';
+const PREVIEW_MODAL_ID = 'pdf-field-preview-modal';
 
 export const PdfFieldInput = () => {
   const { t } = useLingui();
@@ -60,6 +65,11 @@ export const PdfFieldInput = () => {
   const { uploadAttachmentFile } = useUploadAttachmentFile();
   const { openModal, closeModal } = useModal();
   const [isUploading, setIsUploading] = useState(false);
+  const [previewedAttachment, setPreviewedAttachment] =
+    useState<Attachment | null>(null);
+  const isAttachmentPreviewEnabled = useRecoilValue(
+    isAttachmentPreviewEnabledState,
+  );
 
   // Memoize attachmentIds to prevent infinite useEffect loop (new array reference every render)
   const attachmentIds = useMemo(
@@ -121,7 +131,9 @@ export const PdfFieldInput = () => {
           uploadedData.ids.push(result.attachment.id);
           uploadedData.paths.push(result.attachment.fullPath);
           uploadedData.names.push(result.attachment.name);
-          uploadedData.types.push(result.attachment.type);
+          const attachmentType =
+            result.attachment.type || file.type || 'application/pdf';
+          uploadedData.types.push(attachmentType);
         }
       }
 
@@ -162,10 +174,10 @@ export const PdfFieldInput = () => {
     closeModal(MODAL_ID);
 
     // Don't persist if no selection changed
-    if (
-      Boolean(pendingSelection.length === attachmentIds.length) &&
-      pendingSelection.every((id, index) => id === attachmentIds[index])
-    ) {
+    const hasSelectionChanged =
+      pendingSelection.length !== attachmentIds.length ||
+      !pendingSelection.every((id, index) => id === attachmentIds[index]);
+    if (hasSelectionChanged === false) {
       return;
     }
 
@@ -192,7 +204,7 @@ export const PdfFieldInput = () => {
       attachmentIds: pendingSelection,
       fullPaths: selectedAttachments.map((a) => a.fullPath),
       names: selectedAttachments.map((a) => a.name),
-      types: selectedAttachments.map((a) => a.type),
+      types: selectedAttachments.map((a) => a.type || ''),
     };
 
     onSubmit?.({ newValue });
@@ -220,11 +232,37 @@ export const PdfFieldInput = () => {
     onSubmit?.({ newValue });
   };
 
+  const handlePreview = (attachment: Attachment) => {
+    if (!isAttachmentPreviewEnabled) {
+      if (typeof window !== 'undefined') {
+        window.open(attachment.fullPath, '_blank', 'noopener,noreferrer');
+      }
+      return;
+    }
+
+    // Close the attachment selector modal if it's open
+    // This allows the preview modal to be full-screen instead of constrained
+    closeModal(MODAL_ID);
+
+    // Open the preview modal - it will render on top of the field editor
+    // The preview modal is full-screen and will cover the field editor
+    setPreviewedAttachment(attachment);
+    openModal(PREVIEW_MODAL_ID);
+  };
+
+  const handlePreviewClose = () => {
+    closeModal(PREVIEW_MODAL_ID);
+    setPreviewedAttachment(null);
+  };
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onEscape?.({ newValue: draftValue });
-      } else if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+      } else if (
+        event.key === 'Enter' &&
+        (event.metaKey === true || event.ctrlKey === true)
+      ) {
         onSubmit?.({ newValue: draftValue });
       }
     };
@@ -277,7 +315,11 @@ export const PdfFieldInput = () => {
           )}
 
           {!loading && attachments.length > 0 && (
-            <AttachmentGrid attachments={attachments} onRemove={handleRemove} />
+            <AttachmentGrid
+              attachments={attachments}
+              onRemove={handleRemove}
+              onPreview={handlePreview}
+            />
           )}
         </StyledContainer>
       </FieldInputContainer>
@@ -298,6 +340,12 @@ export const PdfFieldInput = () => {
           title={t`Select PDFs`}
         />
       </Modal>
+      <AttachmentPreviewModal
+        modalId={PREVIEW_MODAL_ID}
+        attachment={previewedAttachment}
+        onClose={handlePreviewClose}
+        canDownload={true}
+      />
     </>
   );
 };
