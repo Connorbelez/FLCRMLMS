@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
 
+import { hasImageExtension } from '@/activities/files/constants/imageExtensions';
 import { type Attachment } from '@/activities/files/types/Attachment';
 import { FileIcon } from '@/file/components/FileIcon';
 import { IconX, OverflowingTextWithTooltip } from 'twenty-ui/display';
@@ -96,17 +97,25 @@ export const AttachmentGrid = ({
     onPreview?.(attachment);
   };
 
-  const isImageFile = (mimeType: string) => {
-    return mimeType.startsWith('image/');
+  const isImageAttachment = (attachment: Attachment) => {
+    if (attachment.type?.startsWith('image/')) {
+      return true;
+    }
+
+    if (attachment.fileCategory === 'IMAGE') {
+      return true;
+    }
+
+    return hasImageExtension(attachment.name);
   };
 
   return (
     <StyledGrid>
       {attachments.map((attachment) => {
         const { name: fileName } = getFileNameAndExtension(attachment.name);
-        const isImage = isImageFile(attachment.type);
+        const isImage = isImageAttachment(attachment);
 
-        if (isImage) {
+        if (isImage === true) {
           return (
             <div key={attachment.id}>
               <StyledImageThumbnail
@@ -130,7 +139,7 @@ export const AttachmentGrid = ({
         }
 
         return (
-          <div key={attachment.id}>
+          <div id="AttachmentGrid" key={attachment.id}>
             <StyledFileThumbnail onClick={() => handlePreview(attachment)}>
               <FileIcon fileCategory={attachment.fileCategory} />
               {onRemove && (

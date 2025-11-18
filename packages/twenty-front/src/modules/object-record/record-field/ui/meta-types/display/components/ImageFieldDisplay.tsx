@@ -59,7 +59,7 @@ export const ImageFieldDisplay = () => {
   const remainingCount = attachments.length - visibleAttachments.length;
 
   return (
-    <StyledThumbnailContainer>
+    <StyledThumbnailContainer id="ImageFieldDisplay">
       {visibleAttachments.map((attachment) => (
         <StyledThumbnail
           key={attachment.id}
