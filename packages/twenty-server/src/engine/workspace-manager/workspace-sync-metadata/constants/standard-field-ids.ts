@@ -42,6 +42,7 @@ export const ATTACHMENT_STANDARD_FIELD_IDS = {
   person: '20202020-0158-4aa2-965c-5cdafe21ffa2',
   company: '20202020-ceab-4a28-b546-73b06b4c08d5',
   opportunity: '20202020-7374-499d-bea3-9354890755b5',
+  mortgage: '20202020-9a3b-4c5d-8e6f-b4c5d6e7f8a9',
   dashboard: '20202020-5324-43f3-9dbf-1a33e7de0ce6',
   workflow: '20202020-f1e8-4c9d-8a7b-3f5e1d2c9a8b',
   custom: '20202020-302d-43b3-9aea-aa4f89282a9f',
@@ -193,6 +194,7 @@ export const TIMELINE_ACTIVITY_STANDARD_FIELD_IDS = {
   person: '20202020-c414-45b9-a60a-ac27aa96229f',
   company: '20202020-04ad-4221-a744-7a8278a5ce21',
   opportunity: '20202020-7664-4a35-a3df-580d389fd527',
+  mortgage: '20202020-a1b2-4c3d-8e7f-b5c6d7e8f9a0',
   task: '20202020-b2f5-415c-9135-a31dfe49501b',
   note: '20202020-ec55-4135-8da5-3a20badc0156',
   workflow: '20202020-616c-4ad3-a2e9-c477c341e295',
@@ -211,6 +213,7 @@ export const FAVORITE_STANDARD_FIELD_IDS = {
   person: '20202020-c428-4f40-b6f3-86091511c41c',
   company: '20202020-cff5-4682-8bf9-069169e08279',
   opportunity: '20202020-dabc-48e1-8318-2781a2b32aa2',
+  mortgage: '20202020-9f4b-4c2d-8e3a-b1c2d3e4f5a6',
   workflow: '20202020-b11b-4dc8-999a-6bd0a947b463',
   workflowVersion: '20202020-e1b8-4caf-b55a-3ab4d4cbcd21',
   workflowRun: '20202020-db5a-4fe4-9a13-9afa22b1e762',
@@ -301,6 +304,22 @@ export const MESSAGE_STANDARD_FIELD_IDS = {
   messageChannelMessageAssociations: '20202020-3cef-43a3-82c6-50e7cfbc9ae4',
 } as const;
 
+export const MORTGAGE_STANDARD_FIELD_IDS = {
+  name: '20202020-1c8e-4c9a-9a33-01a27f5c7b10',
+  principalAmount: '20202020-2a41-4f3c-8ea5-19b74c5a8d21',
+  interestRate: '20202020-3fb7-4d7e-9c41-2abc934de532',
+  ltv: '20202020-4e29-4baf-8c5a-3fda6e4bf643',
+  borrower: '20202020-5cc3-4f0e-849b-4baf8d3ce754',
+  position: '20202020-6b1f-4d9c-9f7e-5c1e7b2df865',
+  createdBy: '20202020-7ad2-4fce-86ac-6def8a3e0976',
+  favorites: '20202020-8c34-4b1d-9b8e-7a4fb9c0f987',
+  taskTargets: '20202020-9da6-4d5f-8acb-8c5edab1a098',
+  noteTargets: '20202020-af18-4b81-9d7e-9e7f0bc2b1a9',
+  attachments: '20202020-bc8a-4dd3-8f91-af810cd3c2ba',
+  timelineActivities: '20202020-c5fc-4e25-9ea4-c0921de4d3cb',
+  searchVector: '20202020-d16e-4f77-8fb7-d1a33ef5e4dc',
+} as const;
+
 export const NOTE_STANDARD_FIELD_IDS = {
   position: '20202020-368d-4dc2-943f-ed8a49c7fdfb',
   title: '20202020-faeb-4c76-8ba6-ccbb0b4a965f',
@@ -319,6 +338,7 @@ export const NOTE_TARGET_STANDARD_FIELD_IDS = {
   person: '20202020-38ca-4aab-92f5-8a605ca2e4c5',
   company: 'c500fbc0-d6f2-4982-a959-5a755431696c',
   opportunity: '20202020-4e42-417a-a705-76581c9ade79',
+  mortgage: '20202020-8e3f-4d2c-9f5a-b3c4d5e6f7a8',
   custom: '20202020-3d12-4579-94ee-7117c1bad492',
 } as const;
 
@@ -366,6 +386,7 @@ export const PERSON_STANDARD_FIELD_IDS = {
   messageParticipants: '20202020-498e-4c61-8158-fa04f0638334',
   calendarEventParticipants: '20202020-52ee-45e9-a702-b64b3753e3a9',
   timelineActivities: '20202020-a43e-4873-9c23-e522de906ce5',
+  mortgages: '20202020-e3c7-4f51-9b75-fb2b1e5fa321',
   searchVector: '57d1d7ad-fa10-44fc-82f3-ad0959ec2534',
 } as const;
 
@@ -390,6 +411,7 @@ export const TASK_TARGET_STANDARD_FIELD_IDS = {
   person: '20202020-c8a0-4e85-a016-87e2349cfbec',
   company: '20202020-4703-4a4e-948c-487b0c60a92c',
   opportunity: '20202020-6cb2-4c01-a9a5-aca3dbc11d41',
+  mortgage: '20202020-7d2e-4c3b-8f4a-b2c3d4e5f6a7',
   custom: '20202020-41c1-4c9a-8c75-be0971ef89af',
 } as const;
 
@@ -592,6 +614,7 @@ export const STANDARD_OBJECT_FIELD_IDS = {
   noteTarget: NOTE_TARGET_STANDARD_FIELD_IDS,
   opportunity: OPPORTUNITY_STANDARD_FIELD_IDS,
   person: PERSON_STANDARD_FIELD_IDS,
+  mortgage: MORTGAGE_STANDARD_FIELD_IDS,
   task: TASK_STANDARD_FIELD_IDS,
   taskTarget: TASK_TARGET_STANDARD_FIELD_IDS,
   timelineActivity: TIMELINE_ACTIVITY_STANDARD_FIELD_IDS,

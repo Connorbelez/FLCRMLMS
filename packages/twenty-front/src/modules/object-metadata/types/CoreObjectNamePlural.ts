@@ -19,6 +19,7 @@ export enum CoreObjectNamePlural {
   Note = 'notes',
   NoteTarget = 'noteTargets',
   Opportunity = 'opportunities',
+  Mortgage = 'mortgages',
   Person = 'people',
   Task = 'tasks',
   TaskTarget = 'taskTargets',
